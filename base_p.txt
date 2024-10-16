@@ -1,0 +1,10 @@
+I need you to help me break down the following long-form writing instruction into multiple
+subtasks. Each subtask will guide the writing of one paragraph in the essay, and should include the main points and word count requirements for that paragraph.
+The writing instruction is as follows:
+{USER_PROMPT}
+Please break it down in the following format, with each subtask taking up one line:
+1 - [Describe the main point of the paragraph, in detail] -[Word count requirement, e.g., 400]
+2 - [Describe the main point of the paragraph, in detail] - [word count requirement, e.g. 1000].
+Make sure that each subtask is clear and specific, and that all subtasks cover the entire content of the writing instruction. Do not split the subtasks too finely; 
+each subtask's paragraph should be no less than 500 words and no more than 1000 words. There should be 15 subtasks. Word count for all paragraphs in total is 10,000 words. 
+Do not output any other content.

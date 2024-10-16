@@ -1,0 +1,3 @@
+Paragraph {PROMPT_CONTENT} 
+Make sure that the points are not repeated and that everything is coherant. Since it is part of a larger document, do not write a conclusion for this particular paragraph (unless explicitly stated otherwise). 
+It must be of {WORD_COUNT} minimum. Write more than {WORD_COUNT} words.
