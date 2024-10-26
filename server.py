@@ -1,7 +1,7 @@
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from slowapi import Limiter
@@ -35,8 +35,8 @@ class Settings(BaseSettings):
 @lru_cache()
 def get_settings():
     return Settings()
-settings = get_settings()
 
+settings = get_settings()
 executor = ThreadPoolExecutor(max_workers=settings.max_workers)
 
 @asynccontextmanager
@@ -66,31 +66,34 @@ class QueryRequest(BaseModel):
 class QueryResponse(BaseModel):
     response: str
 
-def query_gemini(prompt: str) -> str:
+def query_gemini(prompt: str):
     try:
         model = genai.GenerativeModel(settings.gemini_model)
         base_prompt = app.state.BASE_PROMPT
-        generated_plan =  model.generate_content(base_prompt.replace(r"{USER_PROMPT}", prompt)).text
+        generated_plan = model.generate_content(base_prompt.replace(r"{USER_PROMPT}", prompt)).text
         plan_list = generated_plan.split('\n')
         iter_prompt = app.state.ITER_PROMPT
-        data = ""
-        print(plan_list)
+
         for plan in plan_list:
             if plan:
-                generated_content  =  model.generate_content(iter_prompt.replace(r"{PROMPT_CONTENT}", plan[0:-4]).replace(r"{WORD_COUNT}", plan[-4:])).text
-                data += generated_content
-        return data
+                generated_content = model.generate_content(iter_prompt.replace(r"{PROMPT_CONTENT}", plan[0:-4]).replace(r"{WORD_COUNT}", plan[-4:])).text
+                yield generated_content + "<br /><br />"  # Yield content with line breaks
 
     except Exception as e:
         logger.error(f"Error querying Gemini: {e}")
-        raise HTTPException(status_code=500, detail="Error querying Gemini")
+        yield "Error generating content"
 
-@app.post("/query", response_model=QueryResponse)
+
+@app.post("/query")
 @limiter.limit(settings.rate_limit)
 async def query(request: Request, query_request: QueryRequest):
     try:
-        response = await asyncio.get_event_loop().run_in_executor(executor, query_gemini, query_request.prompt)
-        return JSONResponse(content={"response": response})
+        async def event_generator():
+            for content in query_gemini(query_request.prompt):
+                yield content
+
+        return StreamingResponse(event_generator(), media_type="text/html")
+
     except HTTPException as http_exc:
         raise http_exc
     except Exception as e:
