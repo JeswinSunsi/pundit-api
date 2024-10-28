@@ -77,6 +77,7 @@ def query_gemini(prompt: str):
         for plan in plan_list:
             if plan:
                 generated_content = model.generate_content(iter_prompt.replace(r"{PROMPT_CONTENT}", plan[0:-4]).replace(r"{WORD_COUNT}", plan[-4:])).text
+                print(generated_content, end="\n")
                 yield generated_content + "<br /><br />"  # Yield content with line breaks
 
     except Exception as e:
