@@ -100,7 +100,7 @@ async def query(request: Request, query_request: QueryRequest):
         logger.error(f"Unexpected error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@app.get("/health")
+@app.head("/health")
 async def health_check():
     return {"status": "healthy"}
 
