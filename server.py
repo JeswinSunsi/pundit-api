@@ -77,7 +77,10 @@ def query_gemini(prompt: str):
         for plan in plan_list:
             if plan:
                 generated_content = model.generate_content(iter_prompt.replace(r"{PROMPT_CONTENT}", plan[0:-4]).replace(r"{WORD_COUNT}", plan[-4:])).text
-                print(generated_content, end="\n")
+                # Low parameter count models tend to add formating and headings to increase char_count
+                removals = ["Paragraph", "**", ":**", "##"]
+                for removal in removals:
+                    generated_content = generated_content.replace(removal, "")
                 yield generated_content + "<br /><br />"  # Yield content with line breaks
 
     except Exception as e:
