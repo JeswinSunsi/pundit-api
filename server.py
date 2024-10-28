@@ -82,7 +82,7 @@ def query_gemini(prompt: str):
 
     except Exception as e:
         logger.error(f"Error querying Gemini: {e}")
-        yield "Error generating content"
+        yield " "
 
 
 @app.post("/query")
